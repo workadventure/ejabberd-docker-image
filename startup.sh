@@ -67,21 +67,31 @@ fi
 
 cd /opt/ejabberd
 
-if [[ -z "${JWT_SECRET}" ]]; then
-JWT_SECRET_BASE64=$(echo -ne "$JWT_SECRET" | base64);
+if [[ ${JWT_SECRET:-"unset"} != "unset" ]]; then
+  JWT_SECRET_BASE64=$(echo -ne "$JWT_SECRET" | base64);
+  jo -p kty=oct use=sig k="$JWT_SECRET_BASE64" alg=HS256 > /opt/ejabberd/conf/jwt_key
 else
   echo "Environment variable JWT_SECRET key is not defined"
   exit 1
 fi
 
-jo -p kty=oct use=sig k="$JWT_SECRET_BASE64" alg=HS256 > /opt/ejabberd/conf/jwt_key
-envsubst < /opt/ejabberd/conf/ejabberd.template.yml > /opt/ejabberd/conf/ejabberd.yml
+# Check if all variables used in the template is defined or not
+grep -o '\${[0-9A-Za-z_]*}' /opt/ejabberd/conf/ejabberd.template.yml | while read line
+do
+    line=$(echo "$line" | sed 's/^..//' | sed 's/.$//')
+    if [[ -z `printenv $line` ]]; then
+      echo "Environment variable $line key is not defined"
+      exit 1
+    fi
+done
 
-if [[ -z "${DB_HOST}" ]]; then
-dbmate -u "mysql://ejabberd:$DB_PASSWORD@$DB_HOST:3306/ejabberd" up
+exit 1
+
+envsubst < /opt/ejabberd/conf/ejabberd.template.yml > /opt/ejabberd/conf/ejabberd.yml
+if [[ ${DB_HOST:-"unset"} != "unset" ]]; then
+  dbmate -u "mysql://ejabberd:$DB_PASSWORD@$DB_HOST:3306/ejabberd" up
 fi
 
-pwd && ls -la
 # Warning, this is needed in dev but might take a long time if we have a lot of files in prod (?)
 chown ejabberd:ejabberd -R /opt/ejabberd
 

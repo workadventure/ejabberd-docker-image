@@ -9,10 +9,12 @@ RUN apk --no-cache add shadow jo
 
 RUN curl -fsSL -o /usr/local/bin/dbmate https://github.com/amacneil/dbmate/releases/latest/download/dbmate-linux-amd64
 RUN chmod +x /usr/local/bin/dbmate
+COPY --chown=docker:docker ./migrations/ /opt/ejabberd/db/migrations/
 
 #USER ejabberd
 
-COPY ./startup.sh /opt/ejabberd/startup.sh
+COPY --chown=docker:docker ./startup.sh /opt/ejabberd/startup.sh
+
 
 ENTRYPOINT ["/opt/ejabberd/startup.sh"]
 CMD ["foreground"]
