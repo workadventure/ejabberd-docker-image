@@ -1,7 +1,3 @@
-# ejabberd-docker-image
-The base image used for WorkAdventure Ejabberd servers
-
-
 # WorkAdventure Ejabberd Docker image
 
 This Docker image is used in WorkAdventure "ejabberd" container.
