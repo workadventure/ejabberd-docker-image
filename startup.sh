@@ -85,8 +85,6 @@ do
     fi
 done
 
-exit 1
-
 envsubst < /opt/ejabberd/conf/ejabberd.template.yml > /opt/ejabberd/conf/ejabberd.yml
 if [[ ${DB_HOST:-"unset"} != "unset" ]]; then
   dbmate -u "mysql://ejabberd:$DB_PASSWORD@$DB_HOST:3306/ejabberd" up
